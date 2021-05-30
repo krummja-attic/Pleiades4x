@@ -14,6 +14,10 @@ class BaseBody(Component):
     def parent(self) -> str:
         return self._parent
 
+    @property
+    def has_parent(self):
+        return self._parent is not None
+
     @parent.setter
     def parent(self, value: Union[str, Entity]) -> None:
         if isinstance(value, Entity):

@@ -1,35 +1,55 @@
-from ecstremity import Component, Entity
+from __future__ import annotations
+from typing import Tuple, Optional
+from functools import cached_property
+
+import numpy as np
 import math
+import scipy as sp
+import scipy.constants as spc
+from ecstremity import Component, Entity
+
+from pleiades.utils.game_math import *
+from pleiades.utils.constants import Units
 
 
-class MassVolume(Component):
+class MassVolumeDB(Component):
 
-    def __init__(
-            self,
-            mass: float,
-            volume: float,
-        ) -> None:
+    def __init__(self, mass: float, volume: float) -> None:
+        """
+        Database Component representing a body's mass in kilograms
+        and volume in cubic kilometers.
+        """
         self._mass = mass
         self._volume = volume
 
-    @property
-    def mass_dry(self) -> float:
-        """Mass in KG of this entity"""
+    @cached_property
+    def mass(self):
+        """Mass in kilograms."""
         return self._mass
 
-    @property
-    def volume_km3(self) -> float:
-        """Volume of this entity in KM^3"""
+    @cached_property
+    def mass_in_grams(self):
+        """Mass in grams."""
+        return self.mass / spc.gram
+
+    @cached_property
+    def volume(self):
+        """Volume in cubic kilometers."""
         return self._volume
 
-    @property
-    def volume_m3(self):
-        return self._volume * 1e9
+    @cached_property
+    def volume_in_meters(self):
+        """Volume in cubic meters."""
+        return self.volume * 1e9
 
-    @property
-    def density_gcm(self):
-        return
+    @cached_property
+    def density(self):
+        """Density in grams per cubic centimeter."""
+        density_in_m3 = self.mass / self.volume_in_meters
+        return density_in_m3 * spc.gram
 
-    @staticmethod
-    def calculate_volume_km3(radius_au: float) -> float:
-        return (4.0 / 3.0) * math.pi * math.pow(radius_au, 3)
+    @cached_property
+    def radius(self):
+        """Radius in meters."""
+        radius = pow((3 * self.mass) / (4 * math.pi * (self.density * spc.gram)), 0.3333333333)
+        return Distance.kilometers_to_meters(radius / 1000 / 100)
