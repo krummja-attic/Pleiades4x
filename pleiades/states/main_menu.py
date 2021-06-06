@@ -8,5 +8,5 @@ from pleiades.renderer import Renderer
 
 class MainMenu(State):
 
-    def on_draw(self):
-        Renderer.print("P L E I A D E S", (255, 0, 0), "center")
+    def on_draw(self, dt: float):
+        Renderer.print("P L E I A D E S", (255, 0, 0), "center", centered=True)
