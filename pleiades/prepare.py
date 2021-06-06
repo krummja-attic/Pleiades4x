@@ -25,11 +25,14 @@ else:
 
 SCREEN_RECT = pg.Rect((0, 0), SCREEN_SIZE)
 
+BACKGROUND = pg.Surface(SCREEN_SIZE)
+BACKGROUND.fill(BACKGROUND_COLOR)
+
 WINDOW_SURFACE = pg.display.set_mode(SCREEN_SIZE, SCREEN_MODE)
 WINDOW_SURFACE.set_colorkey(COLOR_KEY)
 
 DEBUG = {
     "mouse": False,
-    "fps": False,
+    "fps": True,
     "gui": False,
 }

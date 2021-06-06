@@ -21,17 +21,12 @@ from pygame import (
 )
 
 from pleiades import prepare
-from pleiades.prepare import WINDOW_SURFACE
+from pleiades.prepare import WINDOW_SURFACE, BACKGROUND
 from pleiades.event import EventDispatch, T, get
 from pleiades.renderer import Renderer
 
 if TYPE_CHECKING:
     from pleiades.client import Client
-
-
-prepare.DEBUG["mouse"] = True
-prepare.DEBUG["fps"] = True
-# prepare.DEBUG["gui"] = True
 
 
 class StateBreak(Exception):
@@ -57,44 +52,49 @@ class State(Generic[T], EventDispatch[T]):
 
     def __init__(self, client: Client):
         self.client = client
+        self.dt = 0.0
 
-        self.gui = pgui.UIManager(prepare.SCREEN_SIZE)
-        self.gui.set_visual_debug_mode(prepare.DEBUG["gui"])
+        self.client.gui.set_visual_debug_mode(prepare.DEBUG["gui"])
         self.ui_elements = {}
-
-        self.background = pg.Surface(prepare.SCREEN_SIZE)
-        self.background.fill(prepare.BACKGROUND_COLOR)
 
     def register_ui_element(self, key, element):
         self.ui_elements[element] = key
 
+    def on_enter(self):
+        pass
+
+    def on_leave(self):
+        pass
+
     def loop(self) -> Optional[T]:
         while True:
-            dt = 0.001 * self.client.clock.tick()
-
             for event in pg.event.get():
                 try:
                     value: T = self.dispatch(event)
-                    self.gui.process_events(event)
+                    self.client.gui.process_events(event)
                 except StateBreak:
                     return None
                 if value is not None:
                     return value
 
-            self.draw(dt)
-            pg.display.update()
+            self.draw(self.dt)
 
     def draw(self, dt: float):
-        self.background.fill(prepare.BACKGROUND_COLOR)
-        self.gui.update(dt)
+        BACKGROUND.fill(prepare.BACKGROUND_COLOR)
+        self.client.gui.update(dt)
 
-        WINDOW_SURFACE.blit(self.background, (0, 0))
+        WINDOW_SURFACE.fill((0, 0, 0))
+        WINDOW_SURFACE.blit(BACKGROUND, (0, 0))
 
         self.on_draw(dt)
-        self.gui.draw_ui(WINDOW_SURFACE)
+        self.client.gui.draw_ui(WINDOW_SURFACE)
 
         self._draw_debug()
         self._draw_cursor()
+
+        pg.display.update()
+
+        self.dt = 0.001 * self.client.clock.tick(60.0)
 
     def _draw_debug(self):
         if prepare.DEBUG["fps"]:
