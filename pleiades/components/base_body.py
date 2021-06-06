@@ -6,23 +6,27 @@ from ecstremity import Component, Entity
 
 class BaseBody(Component):
 
-    def __init__(self) -> None:
-        self._parent: Optional[str] = None
+    def __init__(self, parent: Optional[str] = None) -> None:
+        self._parent = parent
         self._children: List[str] = []
 
     @property
     def parent(self) -> str:
         return self._parent
 
-    @property
-    def has_parent(self):
-        return self._parent is not None
-
     @parent.setter
     def parent(self, value: Union[str, Entity]) -> None:
         if isinstance(value, Entity):
             value = entity.uid
         self._parent = value
+
+    @property
+    def has_parent(self):
+        return self._parent is not None
+
+    @property
+    def parent_entity(self):
+        return self.entity.world.get_entity(self.parent)
 
     def add_child(self, new_child: Union[str, Entity]) -> None:
         if isinstance(entity_or_uid, Entity):

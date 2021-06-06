@@ -1,0 +1,14 @@
+{
+  "name": "planet",
+  "inherit": ["celestial"],
+  "components": [
+    {
+      "type": "KeplerElements",
+      "properties": {
+        "semi_major_axis": 20.0,
+        "inclination": 0.0,
+        "eccentricity": 0.0
+      }
+    }
+  ]
+}

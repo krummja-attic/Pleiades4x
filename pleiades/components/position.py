@@ -14,15 +14,33 @@ from pleiades.utils.game_math import *
 from pleiades.utils.constants import Units
 
 
-class PositionDB(Component):
+class Position(Component):
 
-    def __init__(self, position: Vector3, system_uid: str) -> None:
+    def __init__(
+            self,
+            x: int = 0,
+            y: int = 0,
+            z: int = 0,
+            system_uid: str = "<unset>"
+        ) -> None:
         """Database Component representing a body's spatial position.
 
         Absolute position is a Vector3 in kilometers.
         """
-        self.position = position
+        self._position = Vector3(x, y, z)
         self.system_uid = system_uid
+
+    @property
+    def position(self) -> Vector3:
+        return self._position
+
+    @position.setter
+    def position(self, value: Vector3) -> None:
+        self._position = value
+
+    @property
+    def xy(self):
+        return self.position.x, self.position.y
 
     @property
     def parent(self):

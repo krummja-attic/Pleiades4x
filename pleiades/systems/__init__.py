@@ -6,7 +6,6 @@ if TYPE_CHECKING:
     from ecstremity import Query, World
 
 
-@log_init
 class BaseSystem:
 
     def __init__(self, client: Client) -> None:
@@ -21,5 +20,5 @@ class BaseSystem:
     def initialize(self):
         raise NotImplementedError()
 
-    def update(self):
+    def update(self, time: float, scale: float, position: Tuple[int, int]):
         raise NotImplementedError()

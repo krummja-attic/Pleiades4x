@@ -21,7 +21,10 @@ class EllipseMath:
 
     @staticmethod
     def semi_minor_axis(semi_major_axis: float, eccentricity: float) -> float:
-        return semi_major_axis * math.sqrt(1 - eccentricity * eccentricity)
+        try:
+            return semi_major_axis * math.sqrt(1 - eccentricity * eccentricity)
+        except ValueError:
+            return 0.0
 
     @staticmethod
     def semi_minor_axis_from_apses(apoapsis: float, periapsis: float) -> float:

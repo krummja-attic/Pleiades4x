@@ -1,8 +1,10 @@
 from pleiades.utils.classproperty import classproperty
+from euclid import Vector3
 
 
 class Science:
     gravitational_constant: float = 6.67408e-11
+    tau: float = 6.28318530718
 
 
 class Units:
@@ -18,6 +20,15 @@ class Units:
     earth_atmosphere_in_kpa: float = 101.325
     celsius_to_kelvin: float = 273.15
     kelvin_to_celsius: float = -273.15
+    au_in_km: float = meters_per_au / 1000.0
+
+    @classproperty
+    def au(self):
+        return Vector3(
+            x = self.au_in_km,
+            y = self.au_in_km,
+            z = 0,
+        ).normalize()
 
     @classproperty
     def au_per_light_year(self) -> float:

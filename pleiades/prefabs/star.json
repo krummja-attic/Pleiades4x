@@ -1,0 +1,7 @@
+{
+  "name": "star",
+  "inherit": ["celestial"],
+  "components": {
+
+  }
+}

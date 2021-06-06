@@ -1,7 +1,8 @@
-import math
 from typing import *
 from dataclasses import dataclass
 from euclid import Vector2, Vector3
+import math
+from datetime import date
 
 from sys import float_info
 
@@ -26,11 +27,7 @@ class KeplerElements:
     mean_anomaly_at_epoch: float
     true_anomaly_at_epoch: float
     orbital_period: float
-    epoch: float
-
-    @property
-    def semi_minor_axis(self):
-        return self.semi_major_axis * math.sqrt(1 - self.eccentricity * self.eccentricity)
+    epoch: date
 
     @property
     def linear_eccentricity_from_eccentricity(self):
@@ -48,7 +45,12 @@ class OrbitMath:
         return 1e-15
 
     @staticmethod
-    def kepler_from_position_and_velocity(sgp: float, position: Vector3, velocity: Vector3, epoch) -> KeplerElements:
+    def kepler_from_position_and_velocity(
+            sgp: float,
+            position: Vector3,
+            velocity: Vector3,
+            epoch: date = date.today()
+        ) -> KeplerElements:
         angular_velocity: Vector3 = position.cross(velocity)
         node_vector: Vector3 = Vector3(0, 0, 1).cross(angular_velocity)
         eccentricity_vector: Vector3 = OrbitMath.eccentricity_vector(sgp, position, velocity)
@@ -65,8 +67,9 @@ class OrbitMath:
 
         semi_minor_axis: float = EllipseMath.semi_minor_axis(semi_major_axis, eccentricity)
 
-        inclination: float = math.acos(angular_velocity.z / vectools.length(angular_velocity))
-        if math.isnan(inclination):
+        try:
+            inclination: float = math.acos(angular_velocity.z / vectools.length(angular_velocity))
+        except ZeroDivisionError:
             inclination = 0
 
         longitude_of_ascending_node: float = OrbitMath.calculate_longitude_of_ascending_node(node_vector)
@@ -112,11 +115,12 @@ class OrbitMath:
 
     @staticmethod
     def calculate_longitude_of_ascending_node(node_vector: Vector3) -> float:
-        length = node_vector.x / vectools.length(node_vector)
-        if math.isnan(length):
+        try:
+            length = node_vector.x / vectools.length(node_vector)
+        except ZeroDivisionError:
             length = 0
-        else:
-            length = GMath.clamp(-1, length, 1)
+
+        length = GMath.clamp(-1, length, 1)
         longitude_of_ascending_node: float = 0.0
 
         if length != 0:

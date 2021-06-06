@@ -1,0 +1,18 @@
+{
+  "name": "celestial",
+  "inherit": [],
+  "components": [
+    {
+      "type": "BaseBody"
+    },
+    {
+      "type": "Mass"
+    },
+    {
+      "type": "Position"
+    },
+    {
+      "type": "Renderable"
+    }
+  ]
+}
