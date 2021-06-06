@@ -2,14 +2,36 @@ from __future__ import annotations
 from typing import Generic, Optional, Callable, TYPE_CHECKING
 from collections import namedtuple
 import pygame as pg
-from pygame import (K_RETURN, K_ESCAPE, KEYDOWN, QUIT, MOUSEMOTION, MOUSEBUTTONDOWN, MOUSEBUTTONUP)
+import pygame_gui as pgui
+
+# Key inputs
+from pygame import (
+    K_RETURN,
+    K_ESCAPE,
+)
+
+# Input events
+from pygame import (
+    KEYDOWN,
+    QUIT,
+    MOUSEMOTION,
+    MOUSEBUTTONDOWN,
+    MOUSEBUTTONUP,
+    USEREVENT,
+)
 
 from pleiades import prepare
+from pleiades.prepare import WINDOW_SURFACE
 from pleiades.event import EventDispatch, T, get
 from pleiades.renderer import Renderer
 
 if TYPE_CHECKING:
     from pleiades.client import Client
+
+
+prepare.DEBUG["mouse"] = True
+prepare.DEBUG["fps"] = True
+# prepare.DEBUG["gui"] = True
 
 
 class StateBreak(Exception):
@@ -36,24 +58,49 @@ class State(Generic[T], EventDispatch[T]):
     def __init__(self, client: Client):
         self.client = client
 
+        self.gui = pgui.UIManager(prepare.SCREEN_SIZE)
+        self.gui.set_visual_debug_mode(prepare.DEBUG["gui"])
+        self.ui_elements = {}
+
+        self.background = pg.Surface(prepare.SCREEN_SIZE)
+        self.background.fill(prepare.BACKGROUND_COLOR)
+
+    def register_ui_element(self, key, element):
+        self.ui_elements[element] = key
+
     def loop(self) -> Optional[T]:
         while True:
-
-            prepare.screen.fill(prepare.BACKGROUND_COLOR)
             dt = 0.001 * self.client.clock.tick()
-            self.on_draw(dt)
-            self._draw_cursor()
-            self._draw_mouse_data()
-            self._draw_fps()
-            pg.display.update()
 
-            for event in get():
+            for event in pg.event.get():
                 try:
                     value: T = self.dispatch(event)
+                    self.gui.process_events(event)
                 except StateBreak:
                     return None
                 if value is not None:
                     return value
+
+            self.draw(dt)
+            pg.display.update()
+
+    def draw(self, dt: float):
+        self.background.fill(prepare.BACKGROUND_COLOR)
+        self.gui.update(dt)
+
+        WINDOW_SURFACE.blit(self.background, (0, 0))
+
+        self.on_draw(dt)
+        self.gui.draw_ui(WINDOW_SURFACE)
+
+        self._draw_debug()
+        self._draw_cursor()
+
+    def _draw_debug(self):
+        if prepare.DEBUG["fps"]:
+            self._draw_fps()
+        if prepare.DEBUG["mouse"]:
+            self._draw_mouse_data()
 
     def _draw_mouse_data(self):
         Renderer.print("    x: " + str(self.POINTERDATA.x), (255, 255, 255), "topleft", 10, 10)
@@ -65,7 +112,7 @@ class State(Generic[T], EventDispatch[T]):
 
     def _draw_cursor(self):
         self.POINTERDATA.cursor = pg.draw.polygon(
-            prepare.screen,
+            WINDOW_SURFACE,
             (255, 0, 0),
             [
                 (self.POINTERDATA.x,
@@ -112,11 +159,12 @@ class State(Generic[T], EventDispatch[T]):
             self.POINTERDATA.click = False
         return False
 
-    def cmd_confirm(self) -> Optional[T]:
-        pass
-
-    def cmd_move(self, x: int, y: int) -> Optional[T]:
-        pass
+    def ev_userevent(self, event: USEREVENT) -> Optional[T]:
+        if event:
+            if event.user_type == pgui.UI_BUTTON_PRESSED:
+                if event.ui_element in self.ui_elements:
+                    func = getattr(self, f"ui_{self.ui_elements[event.ui_element]}")
+                    return func()
 
     def cmd_quit(self):
         raise SystemExit()

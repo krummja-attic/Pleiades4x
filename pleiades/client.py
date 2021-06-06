@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Type
 import pygame as pg
+import pygame_gui as pgui
 from pygame.locals import *
 
 from pleiades import prepare

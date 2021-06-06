@@ -21,7 +21,8 @@ class EventDispatch(Generic[T]):
             "Quit",
             "MouseMotion",
             "MouseButtonDown",
-            "MouseButtonUp"
+            "MouseButtonUp",
+            "UserEvent"
         ]:
             func = getattr(self, "ev_%s" % (event_type.lower(),))
             return func(event)
@@ -45,6 +46,9 @@ class EventDispatch(Generic[T]):
         pass
 
     def ev_mousewheel(self, event) -> Optional[T]:
+        pass
+
+    def ev_userevent(self, event) -> Optional[T]:
         pass
 
     def ev_(self, event: Any) -> Optional[T]:
