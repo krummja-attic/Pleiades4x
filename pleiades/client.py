@@ -13,23 +13,26 @@ class Client:
     def __init__(self):
         self.states = {}
         self.stack = []
-        self.current_state = None
         self.clock = pg.time.Clock()
-        self.gui = pgui.UIManager(prepare.SCREEN_SIZE)
+        self.ui_manager = pgui.UIManager(prepare.SCREEN_SIZE)
+
+    @property
+    def current_state(self):
+        return self.stack[-1]
 
     def initialize(self, key: str, state: Type[State]) -> None:
         self.states[key] = state
-        self.current_state = state(self)
         self.push_state(state)
 
     def push_state(self, state: Type[State]) -> None:
-        self.gui.clear_and_reset()
+        self.ui_manager.clear_and_reset()
         self.stack.append(state(self))
         self.current_state.on_enter()
 
     def pop_state(self):
-        state = self.stack.pop()
-        state.on_leave()
+        self.current_state.on_leave()
+        self.stack.pop()
+        self.current_state.on_enter()
 
     def clear_stack(self):
         while len(self.stack) > 1:
@@ -42,5 +45,6 @@ class Client:
     def run(self):
         running = True
         while running:
-            self.current_state = self.stack[-1]
-            self.current_state.loop()
+            dt = 0.001 * self.clock.tick(60)
+            self.current_state.handle_input()
+            self.current_state.update(dt)

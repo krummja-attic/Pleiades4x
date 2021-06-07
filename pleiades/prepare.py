@@ -14,8 +14,8 @@ FONT = pg.font.Font(_FONT_PATH, 18)
 pg.mouse.set_visible(False)
 pg.mouse.set_cursor((8, 8), (0, 0), (0, 0, 0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 0, 0, 0))
 
-FULLSCREEN = True
-SCREEN_MODE = (None, pg.FULLSCREEN)[FULLSCREEN]
+FULLSCREEN = False
+SCREEN_MODE = (0, pg.FULLSCREEN)[FULLSCREEN]
 
 if FULLSCREEN:
     info = pg.display.Info()
@@ -28,8 +28,8 @@ SCREEN_RECT = pg.Rect((0, 0), SCREEN_SIZE)
 BACKGROUND = pg.Surface(SCREEN_SIZE)
 BACKGROUND.fill(BACKGROUND_COLOR)
 
-WINDOW_SURFACE = pg.display.set_mode(SCREEN_SIZE, SCREEN_MODE)
-WINDOW_SURFACE.set_colorkey(COLOR_KEY)
+SCREEN = pg.display.set_mode(SCREEN_SIZE, SCREEN_MODE)
+SCREEN.set_colorkey(COLOR_KEY)
 
 DEBUG = {
     "mouse": False,

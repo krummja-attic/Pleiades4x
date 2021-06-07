@@ -17,5 +17,8 @@ class Game(State[None]):
     def __init__(self, client: Client):
         super().__init__(client)
 
-    def on_draw(self, dt: float):
+    def draw(self, dt: float):
         Renderer.print("Game Screen", (255, 255, 255), "topleft")
+
+    def cmd_escape(self):
+        self.client.pop_state()

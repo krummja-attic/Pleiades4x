@@ -27,6 +27,6 @@ class Renderer:
         _render = FONT.render(string, True, color if color else (255, 255, 255))
 
         if centered:
-            WINDOW_SURFACE.blit(_render, _render.get_rect(center=screen_pos))
+            SCREEN.blit(_render, _render.get_rect(center=screen_pos))
         else:
-            WINDOW_SURFACE.blit(_render, _render.get_rect(topleft=screen_pos))
+            SCREEN.blit(_render, _render.get_rect(topleft=screen_pos))
