@@ -1,0 +1,67 @@
+{
+  "button": {
+    "colours": {
+      "normal_bg": "#151515,#3c1515,100",
+      "hovered_bg": "#252525,#642525,100",
+      "active_bg": "#642525,#642525,100"
+    },
+    "font": {
+      "name": "ShareTechMono",
+      "size": "14",
+      "bold": "1",
+      "italic": "0",
+      "regular_path": "assets/ShareTechMono-Regular.ttf"
+    },
+    "misc": {
+      "border_width": 2,
+      "shadow_width": 1,
+      "shape": "rounded_rectangle",
+      "state_transitions": {
+        "normal_hovered": "0.1",
+        "hovered_normal": "0.2"
+      }
+    }
+  },
+  "nav_up": {
+    "images": {
+      "normal_image": {
+        "path": "assets/nav_up_default.png"
+      }
+    }
+  },
+  "nav_down": {
+    "images": {
+      "normal_image": {
+        "path": "assets/nav_down_default.png"
+      }
+    }
+  },
+  "nav_left": {
+    "images": {
+      "normal_image": {
+        "path": "assets/nav_left_default.png"
+      }
+    }
+  },
+  "nav_right": {
+    "images": {
+      "normal_image": {
+        "path": "assets/nav_right_default.png"
+      }
+    }
+  },
+  "zoom_in": {
+    "images": {
+      "normal_image": {
+        "path": "assets/zoom_in_default.png"
+      }
+    }
+  },
+  "zoom_out": {
+    "images": {
+      "normal_image": {
+        "path": "assets/zoom_out_default.png"
+      }
+    }
+  }
+}

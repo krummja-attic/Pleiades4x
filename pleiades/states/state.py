@@ -21,24 +21,17 @@ from pygame import (
 )
 
 from pleiades import prepare
-from pleiades.prepare import SCREEN, BACKGROUND
+from pleiades.prepare import background
 from pleiades.event import EventDispatch, T, get
 from pleiades.renderer import Renderer
 
 if TYPE_CHECKING:
+    from pleiades.layouts.layout import Layout
     from pleiades.client import Client
 
 
 class StateBreak(Exception):
     """Return None"""
-
-
-class PointerData:
-    cursor: Optional[pg.Rect] = None
-    scale: int = 5
-    x: int = 0
-    y: int = 0
-    click: bool = False
 
 
 class State(Generic[T], EventDispatch[T]):
@@ -48,15 +41,19 @@ class State(Generic[T], EventDispatch[T]):
         K_ESCAPE: "escape"
     }
     MOVE_KEYS = {}
-    POINTERDATA = PointerData()
 
     def __init__(self, client: Client):
         self.client = client
-        self.client.ui_manager.set_visual_debug_mode(prepare.DEBUG["gui"])
-        self.ui_elements = {}
+        self._layout = None
 
-    def register_ui_element(self, key, element):
-        self.ui_elements[element] = key
+    @property
+    def layout(self):
+        return self._layout
+
+    @layout.setter
+    def layout(self, value):
+        self._layout = value
+        self._layout.initialize()
 
     def on_enter(self):
         pass
@@ -68,25 +65,22 @@ class State(Generic[T], EventDispatch[T]):
         for event in pg.event.get():
             try:
                 value: T = self.dispatch(event)
-                self.client.ui_manager.process_events(event)
+                self.client.ui.backend.process_events(event)
             except StateBreak:
                 return None
             if value is not None:
                 return value
 
     def update(self, dt: float):
-        self.client.ui_manager.update(dt)
-        SCREEN.blit(BACKGROUND, (0, 0))
+        background.fill(prepare.BACKGROUND_COLOR)
+        self.client.ui.update(dt)
+        pg.display.get_surface().blit(background, (0, 0))
         self.draw(dt)
-        self.draw_ui()
+        self.client.ui.draw()
         pg.display.update()
 
     def draw(self, dt: float) -> None:
         raise NotImplementedError()
-
-    def draw_ui(self):
-        self.client.ui_manager.draw_ui(SCREEN)
-        self._draw_cursor()
 
     def ev_quit(self, event: QUIT) -> Optional[T]:
         return self.cmd_escape()
@@ -102,25 +96,30 @@ class State(Generic[T], EventDispatch[T]):
         return None
 
     def ev_mousemotion(self, event: MOUSEMOTION) -> Optional[T]:
-        self.POINTERDATA.x = event.pos[0]
-        self.POINTERDATA.y = event.pos[1]
+        self.client.ui.pointer_data.x = event.pos[0]
+        self.client.ui.pointer_data.y = event.pos[1]
         return None
 
     def ev_mousebuttondown(self, event: MOUSEBUTTONDOWN) -> Optional[T]:
         if event:
-            self.POINTERDATA.click = True
+            self.client.ui.pointer_data.click = True
         return False
 
     def ev_mousebuttonup(self, event: MOUSEBUTTONUP) -> Optional[T]:
         if event:
-            self.POINTERDATA.click = False
+            self.client.ui.pointer_data.click = False
         return False
 
     def ev_userevent(self, event: USEREVENT) -> Optional[T]:
         if event:
             if event.user_type == pgui.UI_BUTTON_PRESSED:
-                if event.ui_element in self.ui_elements:
-                    func = getattr(self, f"ui_{self.ui_elements[event.ui_element]}")
+                match = ''
+                for name in event.ui_element.combined_element_ids:
+                    if name in self.layout.elements.keys():
+                        match = name
+
+                if len(match) > 0:
+                    func = getattr(self, f"ui_{match}")
                     return func()
 
     def cmd_confirm(self) -> Optional[T]:
@@ -129,36 +128,9 @@ class State(Generic[T], EventDispatch[T]):
     def cmd_escape(self) -> Optional[T]:
         raise SystemExit()
 
-    def _draw_cursor(self):
-        self.POINTERDATA.cursor = pg.draw.polygon(
-            SCREEN,
-            (255, 0, 0),
-            [
-                (self.POINTERDATA.x,
-                 self.POINTERDATA.y),
-                (self.POINTERDATA.x
-                 + (2 * self.POINTERDATA.scale),
-                 self.POINTERDATA.y
-                 + (2 * self.POINTERDATA.scale)),
-                (self.POINTERDATA.x,
-                 self.POINTERDATA.y
-                 + (3 * self.POINTERDATA.scale)),
-            ],
-            width = 1
-        )
-
     def _draw_debug(self):
         if prepare.DEBUG["fps"]:
             self._draw_fps()
-        if prepare.DEBUG["mouse"]:
-            self._draw_mouse_data()
 
     def _draw_fps(self):
         Renderer.print(str(int(self.client.clock.get_fps())), (255, 255, 255), "topright", -40, 10)
-
-    def _draw_mouse_data(self):
-        Renderer.print("    x: " + str(self.POINTERDATA.x), (255, 255, 255), "topleft", 10, 10)
-        Renderer.print("    y: " + str(self.POINTERDATA.y), (255, 255, 255), "topleft", 10, 30)
-        Renderer.print("click: " + str(self.POINTERDATA.click), (255, 255, 255), "topleft", 10, 50)
-
-

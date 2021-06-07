@@ -1,11 +1,9 @@
 from __future__ import annotations
 from typing import Type
 import pygame as pg
-import pygame_gui as pgui
-from pygame.locals import *
 
-from pleiades import prepare
-from pleiades.state import State
+from pleiades.states.state import State
+from pleiades.ui_manager import UIManager
 
 
 class Client:
@@ -14,7 +12,7 @@ class Client:
         self.states = {}
         self.stack = []
         self.clock = pg.time.Clock()
-        self.ui_manager = pgui.UIManager(prepare.SCREEN_SIZE)
+        self.ui = UIManager(self)
 
     @property
     def current_state(self):
@@ -25,11 +23,12 @@ class Client:
         self.push_state(state)
 
     def push_state(self, state: Type[State]) -> None:
-        self.ui_manager.clear_and_reset()
+        self.ui.backend.clear_and_reset()
         self.stack.append(state(self))
         self.current_state.on_enter()
 
     def pop_state(self):
+        self.ui.backend.clear_and_reset()
         self.current_state.on_leave()
         self.stack.pop()
         self.current_state.on_enter()
